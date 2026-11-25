@@ -3,6 +3,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 from pathlib import Path
 from app.services import 目录, 装载, 关窗, 贯验, 夹具, 统计, 说明
+from app.modules import 强制关窗
 
 
 async def api_概览(request: Request):
@@ -64,7 +65,18 @@ async def api_夹具装载(request: Request):
 
 
 async def api_关窗(request: Request):
-    return JSONResponse(关窗.关当前窗())
+    报 = 关窗.关当前窗()
+    return JSONResponse(报, status_code=409 if 报.get("冲突") else 200)
+
+
+async def api_强制关窗(request: Request):
+    报 = 关窗.强制关当前窗()
+    return JSONResponse(报, status_code=409 if 报.get("冲突") else 200)
+
+
+async def api_强封只读(request: Request):
+    # 只读回读：窗号、强封键、新窗号、valid
+    return JSONResponse(强制关窗.最近强封())
 
 
 async def api_贯验(request: Request):
@@ -104,6 +116,8 @@ async def api_空桩(request: Request):
     Route("/api/观测点/装载", api_装载, methods=["POST"]),
     Route("/api/观测点/夹具/{name}", api_夹具装载, methods=["POST"]),
     Route("/api/关窗/跑", api_关窗, methods=["POST"]),
+    Route("/api/关窗/强制", api_强制关窗, methods=["POST"]),
+    Route("/api/强制关窗/只读", api_强封只读, methods=["GET"]),
     Route("/api/窗贯验/跑", api_贯验, methods=["POST"]),
     Route("/api/统计/观测命运", api_统计观测),
     Route("/api/统计/缓冲命运", api_统计缓冲),
